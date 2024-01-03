@@ -11,13 +11,13 @@ from src.artifact_api_client import ArtifactApiClient
 async def main():
 
     # get list of projects
-    projects = ProjectApiClient().list_projects()
+    projects = await ProjectApiClient().list_projects()
     print(f'Found {len(projects)} projects')
 
     # get list of repositories for each project
     for project in projects:
         project_name = project["name"]
-        repositories = RepositoryApiClient(project_name).list_repositories()
+        repositories = await RepositoryApiClient(project_name).list_repositories()
         print(f'Found {len(repositories)} repositories in project {project_name}')
 
         # get list of artifacts for each repository
@@ -25,7 +25,7 @@ async def main():
             repo_name = repo["name"]
             artifact_client = ArtifactApiClient(project_name, repo_name)
 
-            artifacts = artifact_client.list_artifacts()
+            artifacts = await artifact_client.list_artifacts()
             print(f'Found {len(artifacts)} artifacts in repository {repo_name}')
 
             # delete artifact tags that are older than 30 days
