@@ -3,6 +3,7 @@ Orchestrate Harbor API calls to list projects, repositories, and artifacts.
 Then, delete artifact tags that are older than 30 days.
 '''
 import asyncio
+import datetime as dt
 from src.project_api_client import ProjectApiClient
 from src.repository_api_client import RepositoryApiClient
 from src.artifact_api_client import ArtifactApiClient
@@ -28,9 +29,14 @@ async def main():
             artifacts = await artifact_client.list_artifacts()
             print(f'Found {len(artifacts)} artifacts in repository {repo_name}')
 
-            # delete artifact tags that are older than 30 days
-            print('Deleting old tags...')
-            artifact_client.delete_old_tags(tags=30)
+            ## delete artifact tags that are older than 30 days
+            # cutoff date 
+            cutoff = dt.datetime.utcnow() - dt.timedelta(days=30)
+            print(f'Looking for artifacts older than {cutoff.date()}...')
+            for artifact in artifacts:
+                if dt.datetime.fromisoformat(artifact["push_time"]) < cutoff:
+                    print(f'Deleting artifact {artifact["digest"]}')
+                    await artifact_client.delete_ref(artifact["digest"])
 
 if __name__ == "__main__":  
     asyncio.run(main())
