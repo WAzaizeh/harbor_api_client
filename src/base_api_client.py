@@ -29,7 +29,7 @@ class BaseHarborApiClient:
                 response.raise_for_status()
                 return response
         except httpx.NetworkError as exc:
-            print(f"Connection error: {exc}")
+            print(f"Network error: {exc}")
             raise exc
         except httpx.TimeoutException as exc:
             print(f"Timeout error: {exc}")
