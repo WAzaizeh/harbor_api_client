@@ -1,6 +1,7 @@
 import os
 import httpx
 import asyncio
+import warnings
 from pathlib import Path
 from typing import Any, Dict, Tuple
 from  tenacity import retry, retry_if_exception_type, wait_fixed, stop_after_attempt
@@ -53,9 +54,14 @@ class BaseHarborApiClient:
         params = {"page": page, "page_size": page_size}
 
         result = []
-        while endpoint:
+        while params['page']:
             response = await self.get(endpoint, params=params, **kwargs)
-            result.extend(response.json())
-            endpoint = response.headers.get("Link", None)
+            response_data  = response.json()
+            
+            if response_data is None:
+                warnings.warn(f"No data returned for endpoint {endpoint} with the following parameters {', '.join([str(val) for val in params.items()])}", Warning)
+            else:
+                result.extend(response_data)
+            params['page'] = params['page'] + 1 if response.links.get('next', {}).get('rel') == 'next' else None
 
         return result
